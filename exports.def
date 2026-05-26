@@ -1,0 +1,5 @@
+LIBRARY "EssentialDeaths"
+EXPORTS
+OBSEPlugin_Query
+OBSEPlugin_Load
+

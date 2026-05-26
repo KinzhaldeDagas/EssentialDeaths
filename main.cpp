@@ -155,7 +155,7 @@ namespace
 			g_trackedCell = currentCell;
 			g_formerEssentialNpcIds.clear();
 			g_currentEssentialRefIds.clear();
-			_MESSAGE("EssentialUntilNoQuests: kill gate adopted current cell=%08X", RefId(g_trackedCell));
+			_MESSAGE("EssentialDeaths: kill gate adopted current cell=%08X", RefId(g_trackedCell));
 		}
 
 		TrackEssentialRef(ref, npc);
@@ -209,7 +209,7 @@ namespace
 
 		if (obse->isEditor)
 		{
-			_ERROR("ERROR::EssentialUntilNoQuests: editor load is not supported");
+			_ERROR("ERROR::EssentialDeaths: editor load is not supported");
 			return false;
 		}
 
@@ -219,7 +219,7 @@ namespace
 			SUPPORTED_RUNTIME_VERSION,
 			SUPPORTED_RUNTIME_VERSION_STRICT))
 		{
-			_ERROR("ERROR::EssentialUntilNoQuests: unsupported runtime version 0x%08X", obse->oblivionVersion);
+			_ERROR("ERROR::EssentialDeaths: unsupported runtime version 0x%08X", obse->oblivionVersion);
 			return false;
 		}
 
@@ -275,7 +275,7 @@ namespace
 		if (newlyTracked || ESSENTIAL_LOG_UNCHANGED_SCANS)
 		{
 			_MESSAGE(
-				"EssentialUntilNoQuests: cell scan reason=%s cell=%08X refs=%u trackedRefs=%u trackedBases=%u newlyTrackedBases=%u scanCount=%u",
+				"EssentialDeaths: cell scan reason=%s cell=%08X refs=%u trackedRefs=%u trackedBases=%u newlyTrackedBases=%u scanCount=%u",
 				SafeText(reason),
 				RefId(cell),
 				refCount,
@@ -302,7 +302,7 @@ namespace
 		FlushPendingEssentialRestores();
 
 		if (g_trackedCell)
-			_MESSAGE("EssentialUntilNoQuests: leaving cell=%08X; clearing %u essential refs", RefId(g_trackedCell), static_cast<UInt32>(g_currentEssentialRefIds.size()));
+			_MESSAGE("EssentialDeaths: leaving cell=%08X; clearing %u essential refs", RefId(g_trackedCell), static_cast<UInt32>(g_currentEssentialRefIds.size()));
 
 		g_trackedCell = currentCell;
 		g_formerEssentialNpcIds.clear();
@@ -324,7 +324,7 @@ namespace
 		}
 
 		g_loadMenuRequested = false;
-		_MESSAGE("EssentialUntilNoQuests: opening load-game menu after prophecy warning");
+		_MESSAGE("EssentialDeaths: opening load-game menu after prophecy warning");
 		OpenLoadGameMenu(0);
 	}
 
@@ -415,7 +415,7 @@ namespace
 		const UInt8 button = ConsumeMessageBoxButton();
 		g_warningMessageOpen = false;
 
-		_MESSAGE("EssentialUntilNoQuests: prophecy warning button=%u", button);
+		_MESSAGE("EssentialDeaths: prophecy warning button=%u", button);
 
 		if (button == 2)
 			ScheduleLoadMenuFromWarning();
@@ -430,7 +430,7 @@ namespace
 		AddUniqueId(g_warnedNpcIds, npcId);
 
 		_MESSAGE(
-			"EssentialUntilNoQuests: former-essential NPC died npc=%08X ref=%08X name=\"%s\"",
+			"EssentialDeaths: former-essential NPC died npc=%08X ref=%08X name=\"%s\"",
 			npcId,
 			RefId(deadRef),
 			SafeText(NpcName(npc)));
@@ -507,7 +507,7 @@ namespace
 
 		ClearEssentialForDeath(npc);
 		QueueProphecyWarning(npc, ref);
-		_MESSAGE("EssentialUntilNoQuests: bypassing Actor_Kill essential branch ref=%08X base=%08X cell=%08X",
+		_MESSAGE("EssentialDeaths: bypassing Actor_Kill essential branch ref=%08X base=%08X cell=%08X",
 			RefId(ref), RefId(npc), RefId(g_trackedCell));
 		return true;
 	}
@@ -530,7 +530,7 @@ namespace
 
 		ClearEssentialForDeath(npc);
 		QueueProphecyWarning(npc, ref);
-		_MESSAGE("EssentialUntilNoQuests: bypassing Actor_HandleDeathState essential conversion ref=%08X base=%08X requestedState=%u cell=%08X",
+		_MESSAGE("EssentialDeaths: bypassing Actor_HandleDeathState essential conversion ref=%08X base=%08X requestedState=%u cell=%08X",
 			RefId(ref), RefId(npc), newDeadState, RefId(g_trackedCell));
 		return true;
 	}
@@ -624,7 +624,7 @@ namespace
 		SafeWrite32(kVtblCharacterDamageAVF, reinterpret_cast<UInt32>(&HookCharacterDamageAVF));
 		WriteRelJump(kActorKillEssentialCheckPatch, reinterpret_cast<UInt32>(&HookActorKillEssentialCheck));
 		WriteRelJump(kActorHandleDeathStateEssentialCheckPatch, reinterpret_cast<UInt32>(&HookActorHandleDeathStateEssentialCheck));
-		_MESSAGE("EssentialUntilNoQuests: installed Character::DamageAV_F watcher, Actor_Kill essential bypass hook, and Actor_HandleDeathState essential conversion bypass hook");
+		_MESSAGE("EssentialDeaths: installed Character::DamageAV_F watcher, Actor_Kill essential bypass hook, and Actor_HandleDeathState essential conversion bypass hook");
 	}
 
 	void ForceEssentialDeath(TESObjectREFR* ref, TESNPC* npc)
@@ -639,7 +639,7 @@ namespace
 		if (actor->GetActorValue(kActorVal_Health) > 0.0f)
 			return;
 
-		_MESSAGE("EssentialUntilNoQuests: forcing unconscious essential death ref=%08X base=%08X deadState=%u health=%.2f cell=%08X",
+		_MESSAGE("EssentialDeaths: forcing unconscious essential death ref=%08X base=%08X deadState=%u health=%.2f cell=%08X",
 			RefId(ref), RefId(npc), actor->DeadState, actor->GetActorValue(kActorVal_Health), RefId(g_trackedCell));
 
 		ClearEssentialForDeath(npc);
@@ -648,19 +648,19 @@ namespace
 
 		if (actor->DeadState == 6)
 		{
-			_MESSAGE("EssentialUntilNoQuests: resetting essential unconscious state before native kill ref=%08X base=%08X",
+			_MESSAGE("EssentialDeaths: resetting essential unconscious state before native kill ref=%08X base=%08X",
 				RefId(ref), RefId(npc));
 			CallActorHandleDeathState(actor, 0);
 		}
 
 		CallActorKill(actor, NULL, 0.0f);
 
-		_MESSAGE("EssentialUntilNoQuests: native Actor_Kill returned ref=%08X base=%08X deadState=%u",
+		_MESSAGE("EssentialDeaths: native Actor_Kill returned ref=%08X base=%08X deadState=%u",
 			RefId(ref), RefId(npc), actor->DeadState);
 
 		if (actor->DeadState != 1)
 		{
-			_MESSAGE("EssentialUntilNoQuests: forcing final death state ref=%08X base=%08X deadState=%u",
+			_MESSAGE("EssentialDeaths: forcing final death state ref=%08X base=%08X deadState=%u",
 				RefId(ref), RefId(npc), actor->DeadState);
 			CallActorHandleDeathState(actor, 1);
 		}
@@ -701,7 +701,7 @@ namespace
 		const UInt32 count = 0;
 		g_serialization->WriteRecordData(&count, sizeof(count));
 
-		_MESSAGE("EssentialUntilNoQuests: skipped serialization of cell-scoped essential NPC list");
+		_MESSAGE("EssentialDeaths: skipped serialization of cell-scoped essential NPC list");
 	}
 
 	void LoadCallback(void* reserved)
@@ -737,7 +737,7 @@ namespace
 
 		g_formerEssentialNpcIds.clear();
 		g_currentEssentialRefIds.clear();
-		_MESSAGE("EssentialUntilNoQuests: ignored persisted former-essential NPC ids; tracking is cell-scoped");
+		_MESSAGE("EssentialDeaths: ignored persisted former-essential NPC ids; tracking is cell-scoped");
 	}
 
 	void NewGameCallback(void* reserved)
@@ -777,7 +777,7 @@ namespace
 				if (msg->data)
 					RequestImmediateScan("post-load-game");
 				else
-					_MESSAGE("EssentialUntilNoQuests: skipped post-load-game scan because load failed");
+					_MESSAGE("EssentialDeaths: skipped post-load-game scan because load failed");
 				break;
 
 			case OBSEMessagingInterface::kMessage_ExitGame:
@@ -796,14 +796,14 @@ namespace
 		g_messaging = static_cast<OBSEMessagingInterface*>(obse->QueryInterface(kInterface_Messaging));
 		if (!g_messaging)
 		{
-			_ERROR("ERROR::EssentialUntilNoQuests: OBSE messaging interface unavailable");
+			_ERROR("ERROR::EssentialDeaths: OBSE messaging interface unavailable");
 			return;
 		}
 
 		if (g_messaging->RegisterListener(g_pluginHandle, "OBSE", MessageHandler))
-			_MESSAGE("EssentialUntilNoQuests: registered OBSE message listener");
+			_MESSAGE("EssentialDeaths: registered OBSE message listener");
 		else
-			_ERROR("ERROR::EssentialUntilNoQuests: failed to register OBSE message listener");
+			_ERROR("ERROR::EssentialDeaths: failed to register OBSE message listener");
 	}
 
 	void InstallSerialization(const OBSEInterface* obse)
@@ -811,14 +811,14 @@ namespace
 		g_serialization = static_cast<OBSESerializationInterface*>(obse->QueryInterface(kInterface_Serialization));
 		if (!g_serialization)
 		{
-			_ERROR("ERROR::EssentialUntilNoQuests: OBSE serialization interface unavailable; former-essential NPC list will not persist");
+			_ERROR("ERROR::EssentialDeaths: OBSE serialization interface unavailable; former-essential NPC list will not persist");
 			return;
 		}
 
 		g_serialization->SetSaveCallback(g_pluginHandle, SaveCallback);
 		g_serialization->SetLoadCallback(g_pluginHandle, LoadCallback);
 		g_serialization->SetNewGameCallback(g_pluginHandle, NewGameCallback);
-		_MESSAGE("EssentialUntilNoQuests: registered serialization callbacks");
+		_MESSAGE("EssentialDeaths: registered serialization callbacks");
 	}
 
 	void InstallEventHandlers(const OBSEInterface* obse)
@@ -826,19 +826,19 @@ namespace
 		g_eventManager = static_cast<OBSEEventManagerInterface*>(obse->QueryInterface(kInterface_EventManager));
 		if (!g_eventManager)
 		{
-			_ERROR("ERROR::EssentialUntilNoQuests: OBSE event manager interface unavailable; knockout/death handling disabled");
+			_ERROR("ERROR::EssentialDeaths: OBSE event manager interface unavailable; knockout/death handling disabled");
 			return;
 		}
 
 		if (g_eventManager->RegisterEvent("ondeath", OnDeathEvent, NULL, NULL, NULL))
-			_MESSAGE("EssentialUntilNoQuests: registered ondeath handler");
+			_MESSAGE("EssentialDeaths: registered ondeath handler");
 		else
-			_ERROR("ERROR::EssentialUntilNoQuests: failed to register ondeath handler");
+			_ERROR("ERROR::EssentialDeaths: failed to register ondeath handler");
 
 		if (g_eventManager->RegisterEvent("onknockout", OnKnockoutEvent, NULL, NULL, NULL))
-			_MESSAGE("EssentialUntilNoQuests: registered onknockout handler");
+			_MESSAGE("EssentialDeaths: registered onknockout handler");
 		else
-			_ERROR("ERROR::EssentialUntilNoQuests: failed to register onknockout handler");
+			_ERROR("ERROR::EssentialDeaths: failed to register onknockout handler");
 	}
 
 	void InstallScanTask(const OBSEInterface* obse)
@@ -852,9 +852,9 @@ namespace
 			g_scanTask = g_tasks->EnqueueTask(ScanTask);
 
 		if (g_scanTask)
-			_MESSAGE("EssentialUntilNoQuests: installed periodic scan task intervalMs=%u", ESSENTIAL_SCAN_INTERVAL_MS);
+			_MESSAGE("EssentialDeaths: installed periodic scan task intervalMs=%u", ESSENTIAL_SCAN_INTERVAL_MS);
 		else
-			_ERROR("ERROR::EssentialUntilNoQuests: OBSE task interface unavailable; only message-triggered scans will run");
+			_ERROR("ERROR::EssentialDeaths: OBSE task interface unavailable; only message-triggered scans will run");
 	}
 }
 
@@ -891,7 +891,7 @@ extern "C"
 
 		if (!HasExactRuntime())
 		{
-			_ERROR("ERROR::EssentialUntilNoQuests: exact Oblivion 1.2.0416 runtime required; got 0x%08X", g_runtimeVersion);
+			_ERROR("ERROR::EssentialDeaths: exact Oblivion 1.2.0416 runtime required; got 0x%08X", g_runtimeVersion);
 			return false;
 		}
 
@@ -904,3 +904,4 @@ extern "C"
 		return true;
 	}
 }
+
